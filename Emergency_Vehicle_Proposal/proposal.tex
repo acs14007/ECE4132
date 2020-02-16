@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{ECE 4132 Proposal}
+\date{February 2020}
+
+\begin{document}
+\section{Abstract}
+    Reported in the American Meteorological Society last year was the astonishing effect adverse weather conditions has on the risk of vehicle fatalities.\cite{study} More astounding is the dramatic effect light precipitation has on risk factors involved in driving; increasing the risk of a fatal crash by $27\%$.\cite{study}.
+    \\ \\ 
+    Using meteorological data can help predict the locations of vehicle fatalities and can help decide when and where limited emergency resources should be placed prior to possible road fatalities.
+ \section{Proposal}
+    The group proposes a two-fold project.
+    \begin{itemize}
+        \item The group proposes to build a neural net using NOAA HRRR\cite{HRRR} data and NHTSA records\cite{NHTSA} to predict the possibility of road fatalities based on real time weather updates.
+        \item The group proposes to build a novel algorithm that will recommend where limited emergency vehicles such as police cars or ambulances should be placed to maximize response time and coverage for risk-prone areas. This is important as many emergency departments have limited vehicles and resources and minimizing response time decreases the possibility of collateral accidents. Response times are strongly correlated also with fatality risks and faster response times should improve victims survival chances.
+    \end{itemize}
+
+\begin{thebibliography}{999}
+
+    \bibitem{study}
+        Scott E. Stevens, Carl J. Schreck III, Shubhayu Saha, Jesse E. Bell, and Kenneth E. Kunkel,
+        \emph{\LaTeX: A Document Preparation System}.
+        American Meteorological Society,
+        12 February, 2019.
+    \bibitem{HRRR}
+        https://rapidrefresh.noaa.gov/
+    \bibitem{NHTSA}
+        https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars
+    
+\end{thebibliography}
+\end{document}
