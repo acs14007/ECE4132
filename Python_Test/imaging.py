@@ -5,6 +5,7 @@ from PIL import Image
 import itertools
 import math
 import sys
+import time
 
 class photo():
         def __init__(self,filename):
@@ -71,8 +72,8 @@ def combineChannels(R,G,B,length):
                 Each tuple represents one pixel in the image.
         """
         return(map(lambda R,G,B:(R,G,B),R,G,B))
+
 def combineChannelsList(R,G,B):
-        output = []
         return(list(zip(R,G,B)))
 
 def unFlatten(flattenedList):
@@ -90,6 +91,20 @@ def unFlatten(flattenedList):
                 channels[i % 3].append(flattenedList[i])
         channels2 = (channels[0],channels[1],channels[2])
         return(channels2)
+
+def getBlock(image,pixelNumber,width):
+    """
+    This function gets the list for the pixels contained in the image
+    centered at the pixel chosen with width specified. Width should be 
+    even.
+    """
+    a = int(width/2)
+    output=[]
+    for j in range(-a,a+1):
+        for i in range(-a,a+1):
+            output.append(image[pixelNumber+i+(2964*j)])
+    return(output)
+
 
 if __name__ == "__main__":
         print("1")
