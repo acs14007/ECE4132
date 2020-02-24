@@ -47,8 +47,9 @@ class photo():
                 if self.mode != "RGB":
                         raise Exception("This is only tested on RGB images")
                 self.Rlist = list(self.image.getdata(0))
-                #self.Glist = list(self.image.getdata(1))
-                #self.Blist = list(self.image.getdata(2))
+                self.Glist = list(self.image.getdata(1))
+                self.Blist = list(self.image.getdata(2))
+                self.Greylist = [int((i+j+k)/3) for i in self.Rlist for j in self.Glist for k in self.Blist]
 
         def flattenData(self):
                 """
