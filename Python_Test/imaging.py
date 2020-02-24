@@ -2,9 +2,6 @@
         Code Written By Aaron Spaulding
 """
 from PIL import Image
-import itertools
-import math
-import sys
 import time
 
 class photo():
@@ -50,8 +47,8 @@ class photo():
                 if self.mode != "RGB":
                         raise Exception("This is only tested on RGB images")
                 self.Rlist = list(self.image.getdata(0))
-                self.Glist = list(self.image.getdata(1))
-                self.Blist = list(self.image.getdata(2))
+                #self.Glist = list(self.image.getdata(1))
+                #self.Blist = list(self.image.getdata(2))
 
         def flattenData(self):
                 """
