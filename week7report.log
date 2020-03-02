@@ -1,0 +1,29 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.2.6)  2 MAR 2020 13:14
+entering extended mode
+**./ProgressUpdates/Week7/week7report.aux
+(ProgressUpdates/Week7/week7report.aux
+LaTeX2e <2019-10-01> patch level 3
+! You can't use `\spacefactor' in vertical mode.
+\@->\spacefactor 
+                 \@m {}
+l.2 \@
+      writefile{toc}{\contentsline {section}{\numberline {1}Progress}{1}\pro...
+
+? 
+! Emergency stop.
+\@->\spacefactor 
+                 \@m {}
+l.2 \@
+      writefile{toc}{\contentsline {section}{\numberline {1}Progress}{1}\pro...
+End of file on the terminal!
+
+ 
+Here is how much of TeX's memory you used:
+ 8 strings out of 492484
+ 279 string characters out of 3130516
+ 58725 words of memory out of 3000000
+ 4452 multiletter control sequences out of 15000+200000
+ 3640 words of font info for 14 fonts, out of 3000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 5i,0n,1p,136b,8s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!

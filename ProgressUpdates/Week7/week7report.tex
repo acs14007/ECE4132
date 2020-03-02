@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\title{Week 7 Report}
+\author{Aaron Spaulding}
+\date{March 2, 2020}
+
+\begin{document}
+\section{Progress}
+    \begin{enumerate}
+        \item Aaron and Thomas met to gather more test photos and discuss ideas for dealing with 360 photos. 
+    \end{enumerate}
+\section{Aaron Spaulding}
+    \begin{enumerate}
+        \item Faces a problem with the Sum of Squared Differences method used previously. We think it is because matching areas in other sections may be very warped due to the spherical projection. It may be possible to circumvent this by "rotating" the image or by using another correlation method.
+        \item Aaron came up with a method of determining distance for spherical photos. This however only works if the matching points on two images actually can be matched. The method is detailed below.
+    \end{enumerate}
+\subsection{Aaron's Method}
+    We regard the two camera centers as the points $x_1$ and $x_2$. Observe the line $x_c$ drawn connecting these two points. Observe a point $P$ in space with lines $a$ and $b$ connecting $x_1$ and $x_2$ respectively to $P$. Observe angle $\alpha_1$ and $\alpha_2$ formed by the lines $a$ and $b$ and $x_c$. We wish to find the distance of the median drawn from the midpoint of $x_c$ to $P$ as a function of $x_c$, $\alpha_1,$ and $\alpha_2$. Call $d$ this distance. Observe the following equation:
+    \begin{equation}
+        d = x_c \sqrt{\frac{2sin^2(\alpha_1)cos^2(\alpha_2)+3sin(\alpha_1)cos(\alpha_1)sin(\alpha_2)cos(\alpha_2)+2cos^2(\alpha_1)sin^2(\alpha_2)+sin^2(\alpha_1)sin^2(\alpha_2)}{4(sin^2(\alpha_1)cos^2(\alpha_2)+2sin(\alpha_1)cos(\alpha_1)sin(\alpha_2)cos(\alpha_2)+cos^2(\alpha_1)sin^2(\alpha_2))}}
+    \end{equation}
+\end{document}

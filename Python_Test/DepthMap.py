@@ -332,11 +332,6 @@ if __name__ == "__main__":
     
     a = checkCenterOffset(PhotoL,PhotoR,width=3)
     import random
-    timer1=time.time()
-    for i in range(0,100):
-        b = Correlate(PhotoL,PhotoR,random.randint(200000,3000000),a[0],a[1])
-    timer2=time.time()
-    print((timer2-timer1)/100)
     b = Correlate1(PhotoL,PhotoR,295000,width=3,step=1,offsetMax=200,offsetMin=72)
     print(a)
     print(b)
