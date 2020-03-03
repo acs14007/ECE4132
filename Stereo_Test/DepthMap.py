@@ -54,8 +54,8 @@ def Marker(data,location,photoWidth,width=10):
 if __name__ == "__main__":
     startTime = time.time()
 
-    PhotoL = photo("flatLeft.jpg")
-    PhotoR = photo("flatRight.jpg")
+    PhotoL = photo("aisle1sphere_pano.jpg")
+    PhotoR = photo("aisle2sphere_pano.jpg")
     PhotoL.flattenChannels()
     PhotoR.flattenChannels()
     emptyList = [0 for i in range(0,PhotoL.size[0]* PhotoL.size[1])]
@@ -83,9 +83,6 @@ if __name__ == "__main__":
     outputl.save("outputl.png")
     outputr.putdata(outputDatar)
     outputr.save("outputr.png")
-
-
-
 
     
 
