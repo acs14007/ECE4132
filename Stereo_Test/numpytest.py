@@ -89,14 +89,14 @@ if __name__ == "__main__":
     # print(trimPoint)
     # print(a)
 
-    # for i in range(800,2096,100):
-    #     print(i)
-    #     trimPoint = [i,2596]
-    #     width = 50
-    #     trimmedData1 = centeredimage1data[trimPoint[0]-width:trimPoint[0]+width,trimPoint[1]-width:trimPoint[1]+width]
-    #     a = CorrelatePoint(trimmedData1,centeredimage2data,trimPoint)
-    #     centeredimage1data = Marker(centeredimage1data,trimPoint,width)
-    #     centeredimage2data = Marker(centeredimage2data,a,width)
+    for i in range(800,2096,100):
+        print(i)
+        trimPoint = [i,2596]
+        width = 50
+        trimmedData1 = centeredimage1data[trimPoint[0]-width:trimPoint[0]+width,trimPoint[1]-width:trimPoint[1]+width]
+        a = CorrelatePoint(trimmedData1,centeredimage2data,trimPoint)
+        centeredimage1data = Marker(centeredimage1data,trimPoint,width)
+        centeredimage2data = Marker(centeredimage2data,a,width)
     
     Image.fromarray(centeredimage1data).save("test9P1.JPG")
     Image.fromarray(centeredimage2data).save("test9P2.JPG")
