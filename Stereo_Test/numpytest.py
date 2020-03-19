@@ -50,7 +50,7 @@ def CorrelatePoint(square1,image2,location):
     for i in range(-150,150):
         for j in range(-150,150):
             square2 = image2[location[0]+i-width:location[0]+i+width,location[1]+j-height:location[1]+j+height]
-            h = CC(square1,square2)
+            h = SSD(square1,square2)
             if h < bestMatch[0]:
                 bestMatch = [h,[location[0]+i,location[1]+j]]
     return(bestMatch[1])
@@ -72,8 +72,8 @@ if __name__ == "__main__":
     #We know the offset from manual calibration 91 pixels for the aisle image
     #We should automate this so the center point can be calculated faster.
     #This is a TO-DO item
-    centeredimage1data = np.roll(image1data,-3*91)
-    centeredimage2data = np.roll(image2data,-3*(91+2896))
+    centeredimage1data = np.roll(image1data,-3*(91+724))
+    centeredimage2data = np.roll(image2data,-3*(91+2896+724))
     outputData = centeredimage1data * 0
 
 
@@ -89,16 +89,16 @@ if __name__ == "__main__":
     # print(trimPoint)
     # print(a)
 
-    for i in range(800,2096,100):
-        print(i)
-        trimPoint = [i,2596]
-        width = 50
-        trimmedData1 = centeredimage1data[trimPoint[0]-width:trimPoint[0]+width,trimPoint[1]-width:trimPoint[1]+width]
-        a = CorrelatePoint(trimmedData1,centeredimage2data,trimPoint)
-        centeredimage1data = Marker(centeredimage1data,trimPoint,width)
-        centeredimage2data = Marker(centeredimage2data,a,width)
+    # for i in range(800,2096,200):
+    #     print(i)
+    #     trimPoint = [i,2596]
+    #     width = 100
+    #     trimmedData1 = centeredimage1data[trimPoint[0]-width:trimPoint[0]+width,trimPoint[1]-width:trimPoint[1]+width]
+    #     a = CorrelatePoint(trimmedData1,centeredimage2data,trimPoint)
+    #     centeredimage1data = Marker(centeredimage1data,trimPoint,width)
+    #     centeredimage2data = Marker(centeredimage2data,a,width)
+    Image.fromarray(centeredimage1data).show("test9P1.JPG")
+    Image.fromarray(centeredimage2data).show("test9P2.JPG")
     
-    Image.fromarray(centeredimage1data).save("test9P1.JPG")
-    Image.fromarray(centeredimage2data).save("test9P2.JPG")
     endTime = time.time()
     print(endTime-startTime)
