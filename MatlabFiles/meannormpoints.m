@@ -1,4 +1,4 @@
-function [normpoints, tform] = meanNormPoints(points)
+function [normpoints, tform] = meannormpoints(points)
 % MEANNORMALIZE transforms a column of 2-d vectors to center about origin
 %
 %   % Parameters
