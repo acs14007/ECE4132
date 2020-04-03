@@ -5,6 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from progress.bar import IncrementalBar
+from multiprocessing import Queue
+import multiprocessing as mp
+import pickle
 
 """
     To speed up processing we use the PIL library in conjunction with numpy.
@@ -16,7 +19,9 @@ def Marker(data,location,width=100,color = [0,255,0]):
     for i in range(-width,width+1):
         for j in range(-width,width+1):
             if abs(j) == width or abs(i) == width:
-                data[location[0]+i,location[1]+j] = color
+                try:
+                    data[location[0]+i,location[1]+j] = color
+                except IndexError:pass
             else:pass
     return(data)
 
@@ -44,7 +49,7 @@ def NCC(square1,square2):
     """
     mean1=np.mean(square1)
     mean2=np.mean(square2)
-    std1 = np.std(square1)
+    std1 = np.std(  square1)
     std2 = np.std(square2)
     square1 = ((square1 - mean1) / std1) * ((square2 - mean2) / std2)
     return(np.sum(square1))
@@ -62,16 +67,16 @@ def CorrelatePoint(square1,image2,location):
                 bestMatch = [h,[location[0]+i,location[1]+j]]
     return(bestMatch[1])
 
-def shiftImages(currentPosition,image1,image2,image3,amount):
+def shiftImages(currentPosition,image1,image2,amount):
     """
         Amount should be in pixels
         Works for images that measure 5792x2896 with three colour channels
     """
     image1 = np.roll(image1,3*amount)
     image2 = np.roll(image2,3*amount)
-    image3 = np.roll(image3,3*amount)
+    #image3 = np.roll(image3,3*amount)
     currentPosition = (currentPosition[0] + amount,currentPosition[1])
-    return((currentPosition,image1,image2,image3))
+    return((currentPosition,image1,image2))
 
 pixelsToRadians = lambda p : math.pi * p / 2896
 radiansToPixels = lambda r : int(2896 * r / math.pi)
@@ -83,10 +88,14 @@ def AnglesToDistance(p1,p2,cameraDistance = 0.3):
     """
     alpha1 = math.acos(math.sin(p1[1])*math.cos(p1[0]))
     alpha2 = math.acos(-math.sin(p2[1])*math.cos(p2[0]))
-    #print(alpha1,alpha2)
-    if alpha1+alpha2 <= math.pi:pass
-    distance = (cameraDistance * math.sin(alpha2)) / (math.sin(alpha2 + alpha1))
-    return(distance)
+    #if math.sin(alpha1+alpha2) >= 0:
+    if True:
+        distance = (cameraDistance * math.sin(alpha2)) / (math.sin(alpha2 + alpha1))
+        if p1[1] < 0:
+            distance = -1 * distance
+        #print(p1,p2,alpha1,alpha2,distance)
+        return(distance)
+    else:return(0)
 
 def inList(value,list,error):
     """
@@ -101,9 +110,9 @@ def inList(value,list,error):
 
 
 def histogramEqualization(image):
-    R = image1data[:,:,0]
-    G = image1data[:,:,1]
-    B = image1data[:,:,2]
+    R = image[:,:,0]
+    G = image[:,:,1]
+    B = image[:,:,2]
     s = image.shape
     # # from http://www.janeriksolem.net/2009/06/histogram-equalization-with-python-and.html
     
@@ -129,8 +138,8 @@ def histogramEqualization(image):
 if __name__ == "__main__":
     startTime = time.time()
     #We first import the two photos.
-    image1 = Image.open("lab1sphere_pano.jpg")
-    image2 = Image.open("lab1sphere_pano.jpg")
+    image1 = Image.open("aisle1sphere_pano.jpg")
+    image2 = Image.open("aisle2sphere_pano.jpg")
     print("Images Imported:", time.time()-startTime)
 
     #We now convert the images to numpy arrays.
@@ -144,11 +153,14 @@ if __name__ == "__main__":
     #This is a TO-DO item
     image1data = np.roll(image1data,-3*(91))
     image2data = np.roll(image2data,-3*(91+2896))
+    #Image.fromarray(image2data).show()
     outputData = image1data * 0
     
     #We now histogram equalize input data
     image1data = histogramEqualization(image1data)
     image2data = histogramEqualization(image2data)
+
+    
     print("Images Equalized:",time.time()-startTime)
 
 
@@ -156,13 +168,18 @@ if __name__ == "__main__":
     centerposition = (2896,1448)
     #16.10.1147
     #[0.33,0.66,1,1.33,1.66,2,2.33,2.66,3]
-    stepSize = 16#Should be even Smaller is more resolution
-    sampleSize = 10#Tuning parameter Width of squares
-    statusBar = IncrementalBar("Image Lines",max = 5792,suffix = '%(index)d/%(max)d [%(elapsed)d / %(eta)d / %(eta_td)s]')
-    for columns in range(0,5793,stepSize):
-        [statusBar.next() for i in range(stepSize)]
-        (centerposition,outputData,image1data,image2data) = shiftImages(centerposition,outputData,image1data,image2data,stepSize)
-        for y in range(400,2496,stepSize):
+    stepSize = 128#Should be even Smaller is more resolution
+    sampleSize = 20#Tuning parameter Width of squares
+    #statusBar = IncrementalBar("Image Lines",max = 5792,suffix = '%(index)d/%(max)d [%(elapsed)s / %(eta_td)s]')
+
+    
+
+    def ComputeColumn(image1data,image2data,centerposition,q,stepSize,sampleSize,statusBar,leftShift):
+        #[statusBar.next() for i in range(stepSize)]
+        print("YEET")
+        (centerposition,image1data,image2data) = shiftImages(centerposition,image1data,image2data,leftShift)
+        for y in range(1248,2396,stepSize):
+        #for y in [1504]:
             relativeposition = (2896,y)
             pixelPosition = (centerposition[0]-relativeposition[0],relativeposition[1]-centerposition[1])    
             theta1 = pixelsToRadians(pixelPosition[0])
@@ -171,55 +188,105 @@ if __name__ == "__main__":
             areaToCheck = list(range(-600,600,1))
             placesToCheck = []
             distances = np.array([0.33,0.66,1,1.33,1.66,2,2.33,2.66,3])
+            #Image.fromarray(image2data).show()
             for i in areaToCheck:
                 try:
                     theta2 = pixelsToRadians(i + pixelPosition[0])
                     phi2 = math.atan((L / math.sin(theta2)))
                     distance = AnglesToDistance((theta1,phi1),(theta2,phi2))
                     #print(theta2,phi2)
-                    if distance < 3 and distance > 0.3:
+                    if distance > 0:
                     #if inList(distance,distances,0.09):
+                    #if True:
                         placesToCheck.append((theta2,phi2))
+                        #image2data[1447-radiansToPixels(phi2),centerposition[0] - radiansToPixels(theta2)] = [0,255,0]
                     else:pass
                 except ZeroDivisionError:pass
-                #image2data[1447-radiansToPixels(phi2),centerposition[0] - radiansToPixels(theta2)] = [0,255,0]
-            #Image.fromarray(image2data).show()
-            #image1data = Marker(image1data,[2896 - relativeposition[1],relativeposition[0]],16)
+            #image1data = Marker(image1data,[2896 - relativeposition[1],relativeposition[0]],8)
 
+            #Now we correlate and find best match
             x1,y1 = centerposition[0]-radiansToPixels(theta1),1447-radiansToPixels(phi1)
             square1 = image1data[y1-sampleSize:y1+sampleSize,x1-sampleSize:x1+sampleSize]
-            bestMatch = [10000000,(0,0)]
+            bestMatch = [10000000000,(0,0)]
             alpha1 = math.acos(math.sin(phi1)*math.cos(theta1))
+            correlations = []
+            j = 0
             for i in placesToCheck:
                 x2,y2 = centerposition[0]-radiansToPixels(i[0]),1447-radiansToPixels(i[1])
                 p2 = (i[0],i[1])
                 alpha2 = math.acos(-math.sin(p2[1])*math.cos(p2[0]))
                 #print(alpha1,alpha2)
                 square2 = image2data[y2-sampleSize:y2+sampleSize,x2-sampleSize:x2+sampleSize]
-                if alpha1+alpha2 <= math.pi:
-                    distance = (0.3 * math.sin(alpha2)) / (math.sin(alpha2 + alpha1))
+                distance = (0.3 * math.sin(alpha2)) / (math.sin(alpha2 + alpha1))
+                if distance >= 1:
+                #if True:
                     #print(distance)
                     try:
                         square2 = np.absolute(square1-square2)
                         #square2 = np.sum(square1*square2)
-                    except ValueError:
-                        pass
+                    except ValueError:pass
                     h = np.sum(square2)
-                else:h = 10000000
+                    #correlations.append(h)
+                else:
+                    h = 1000000000
                 if h < bestMatch[0]:
                     bestMatch = [h,(x2,y2)]
+                #if j in [76]: 
+                #    image2data = Marker(image2data,[y2,x2],20)
+                j += 1
             #image1data = Marker(image1data,[y1,x1],8)
-            #image2data = Marker(image2data,[bestMatch[1][1],bestMatch[1][0]],8)
+            image2data = Marker(image2data,[bestMatch[1][1],bestMatch[1][0]],20)
             p2 = (pixelsToRadians(centerposition[0]-bestMatch[1][0]),pixelsToRadians(1447-bestMatch[1][1])) 
             distance = AnglesToDistance((theta1,phi1),p2)
-            #print(distance)
-            if distance <= 4:
-                distance = round(distance)
-                distance = 60 * distance
-            else:distance = 255
             p1 = 1447-radiansToPixels(phi1)
-            p2 = centerposition[0] - radiansToPixels(theta1)
-            outputData[p1-int(stepSize/2):p1+int(stepSize/2),p2-int(stepSize/2):p2+int(stepSize/2)] = [distance,distance,distance]
+            #p2 = centerposition[0] - radiansToPixels(theta1)
+            p2 = 2896 - radiansToPixels(theta1)
+            q.put((p1,p2,distance))
+            (centerposition,image1data,image2data) = shiftImages(centerposition,image1data,image2data,-leftShift)
+
+    statusBar = 0
+    columns = list(range(0,5793,stepSize))
+    pool = mp.Pool(processes=4)
+    m = mp.Manager()
+    q = m.Queue()
+    for column in columns:
+        print(column)
+        arguments = (image1data,image2data,centerposition,q,stepSize,sampleSize,statusBar,1)
+        a = pool.apply_async(ComputeColumn, args=(arguments,))
+        print(a)
+        print("hello")
+        input()
+        #ComputeColumn(image1data,image2data,centerposition,q,stepSize,sampleSize,statusBar,column)
+        #processes.append(process)
+        #process.start()
+    #for process in processes:
+    #    process.start()
+    pool.close()
+
+    
+    while q.qsize() < len(columns) * len(list(range(1248,2396,stepSize))):
+        time.sleep(0.1)
+
+    pool.terminate()
+    while q.qsize() > 0:
+        (p1,p2,distance) = q.get()
+        if p2 > 5792:
+            p2 = p2 - 5792
+        outputData[p1-int(stepSize/2):p1+int(stepSize/2),p2-int(stepSize/2):p2+int(stepSize/2)] = [distance,distance,distance]
+    
+    # with open(dataName, 'wb') as f:
+    #     pickle.dump(correlations, f, pickle.HIGHEST_PROTOCOL)
+    # #plt.plot(correlations) 
+    # #plt.show()
+    # print("Done")
+    # #         q.put((distance,p1,p2))
+    
+    # print("Processed All Depth Values")
+    # print("Creating Depth Map")
+
+    # while q.qsize() > 0:
+    #     (distance,p1,p2) = q.get()
+    #     outputData[p1-int(stepSize/2):p1+int(stepSize/2),p2-int(stepSize/2):p2+int(stepSize/2)] = [distance,distance,distance]
 
     # trimPoint = [1448,2596]
     # width = 100
@@ -241,6 +308,7 @@ if __name__ == "__main__":
     #     a = CorrelatePoint(trimmedData1,centeredimage2data,trimPoint)
     #     centeredimage1data = Marker(centeredimage1data,trimPoint,width)
     #     centeredimage2data = Marker(centeredimage2data,a,width)
+    outputData = histogramEqualization(outputData)
     Image.fromarray(image1data).save("1.JPG")
     Image.fromarray(image2data).save("2.JPG")
     Image.fromarray(outputData).save("Depth.JPG")
