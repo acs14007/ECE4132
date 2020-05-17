@@ -35,7 +35,7 @@ def shiftImages(currentPosition,image1,image2,image3,amount):
 pixelsToRadians = lambda p : math.pi * p / 2896
 radiansToPixels = lambda r : int(2896 * r / math.pi)
  
-def AnglesToDistance(p1,p2,cameraDistance = 0.3):
+def AnglesToDistance(p1,p2,cameraDistance = 0.27305):
     """
         Inputs two tuples of angles and outputs the distance from the camera 1 to the projected position
         p1 and p2 should be tuples of elements theta and phi
@@ -78,12 +78,28 @@ if __name__ == "__main__":
     dataType = np.ubyte
     image1data = np.array(image1,dtype=dataType)
     image2data = np.array(image2,dtype=dataType)
-    image1data = np.roll(image1data,-3*(91))
-    image2data = np.roll(image2data,-3*(91+2896))
+    
+    
+    # b = 0
+    # while True:
+    #     a = int(input("How much: "))
+    #     b += a
+    #     image2data = np.roll(image2data,-3*int(a))
+    #     print(b)
+    #     Image.fromarray(image2data).show()
+
+
+
+    # image1data = np.roll(image1data,-3*(91))
+    # image2data = np.roll(image2data,-3*(91+2896))
+    image1data = np.roll(image1data,-3*(10))
+    image2data = np.roll(image2data,-3*(-61+2896))
     outputData = np.array(image1data * 0,dtype=dataType)
     outputData = histogramEqualization(outputData)
+    Image.fromarray(image1data).show()
+    Image.fromarray(image2data).show()
     print("Images Equalized:",time.time()-startTime)
-
+    
     #This is a slow way to compute the sobel filter and then adjust the values
     #It would be faster to use histogram modification to adjust the values
     #This is just easy to program and should be fixed
@@ -92,24 +108,31 @@ if __name__ == "__main__":
     edgeData = np.ndarray.tolist(edgeData.flatten())
     edgeData = np.reshape(np.array(list(map(lambda x: 0 if x < 0 else (255 if (x > 255) else (255 if (x > 50) else 0)),edgeData))),shape)
     print("Edge Data Computed:",time.time()-startTime)
+    Image.fromarray(edgeData).show()
+    input()
 
-    stepSize        =   32
+    stepSize        =   16
     sampleSizes     =   [120,140,160,180,200,225,250,275,300,350,400,450,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700]
+    #sampleSizes     =   [120,140,160,180,200,225,250,275,300,350,400,450,500]
     sobelFactor     =   2000 #made up value 1530
     centerposition  =   (2896,0)
-    planesToCheck   =   np.array([400,300,200,100,75,50,25,20,15,10,8,7,6,5,4.5,4,3.5,3,2.5,2,1.6,1.3,1],dtype=dataType)
+    # planesToCheck   =   np.array([400,300,200,100,75,50,25,20,15,10,8,7,6,5,4.5,4,3.5,3,2.5,2,1.6,1.3,1],dtype=dataType)
+    planesToCheck   =   np.array([0.914,1.00,0.823])
     colours         =   np.array([[i,i,i] for i in range(0,255,int(255/len(planesToCheck)))],dtype=dataType)
+    green           =   np.array([0,255,0])
+    colours[0]      =   green
     statusBar       =   IncrementalBar("Image Lines",max = 5792,suffix = '%(index)d/%(max)d %(elapsed)s/%(eta_td)s')
     
 
     OUTPUTC = []
-    #for _ in range(0,5792,stepSize):
-    for _ in [1]:
+    # for _ in range(0,5792,stepSize):
+    for i in [4550,20,20,20,20,20,20,20,20]:
         [statusBar.next() for _ in range(stepSize)]
-        (centerposition,outputData,image1data,image2data) = shiftImages(centerposition,outputData,image1data,image2data,2000)
+        (centerposition,outputData,image1data,image2data) = shiftImages(centerposition,outputData,image1data,image2data,i)
         edgeData = np.roll(edgeData,stepSize)
-        #for y in range(500,2397,stepSize):
-        for y in [1448]:
+        # for y in range(500,2397,stepSize):
+        # for y in [1490,1470,1450,1430,1410,1390,1370,1350,1330,1310,1290,1270]:
+        for y in range(1270,1490,20):
             placesToCheck = []
             relativeposition1 = (2896,y)# This is the current spot in image 1 we are looking at
             AbsolutePosition1 = (centerposition[0]-relativeposition1[0],y)# Offset from absolute top Center
@@ -121,7 +144,7 @@ if __name__ == "__main__":
                 edgeSquare = edgeData[relativeposition1[1]-sampleSize:relativeposition1[1]+sampleSize,relativeposition1[0]-sampleSize:relativeposition1[0]+sampleSize]
                 sum = np.sum(edgeSquare,dtype = np.uint64)
                 if sum >= (sobelFactor * sampleSize):j = False
-                elif h == len(sampleSizes):j = False
+                elif h == len(sampleSizes)-1:j = False
                 h += 1 
             
             #image1data = Marker(image1data,[relativeposition1[1],relativeposition1[0]],sampleSize)
@@ -136,15 +159,16 @@ if __name__ == "__main__":
                     phi2 = math.atan((L / math.sin(theta2)))
                     if phi2 < 0: phi2 += math.pi
                     distance = AnglesToDistance((theta1,phi1),(theta2,phi2))
+                    image2data[radiansToPixels(phi2),centerposition[0]-radiansToPixels(theta2)] = [0,255,0]
                     if distance >= 0:
-                        print(distance)
-                        delta = np.abs(planesToCheck-distance)
+                        #print(distance)
+                        # delta = np.abs(planesToCheck-distance)
                         placesToCheck.append((theta2,phi2))
                         # for h in range(planesToCheck.size):
                         #     if delta[h] < Delta[h]:
                         #         Delta[h] = delta[h]
                         #         placesToCheck[h] = (theta2,phi2)
-                        #         #placesToCheck.append((theta2,phi2))
+                                #placesToCheck.append((theta2,phi2))
                 except ZeroDivisionError:pass
 
             
@@ -165,17 +189,20 @@ if __name__ == "__main__":
             a = correlations.index(max(correlations))
             bestMatch = placesToCheck[a]
             distance = AnglesToDistance((theta1,phi1),(bestMatch[0],bestMatch[1]))
-            colour = colours[np.argmin(np.abs(planesToCheck - distance))]
+            colour = [distance,distance,distance]
+            print(distance)
+            # colour = colours[np.argmin(np.abs(planesToCheck - distance))]
             outputData[relativeposition1[1]-int(stepSize/2):relativeposition1[1]+int(stepSize/2),relativeposition1[0]-int(stepSize/2):relativeposition1[0]+int(stepSize/2)] = colour
             image1data = Marker(image1data,[relativeposition1[1],relativeposition1[0]],20)
+            image2data = Marker(image2data,[radiansToPixels(bestMatch[1]),centerposition[0]-radiansToPixels(bestMatch[0])],20)
             #image2data = Marker(image2data,[radiansToPixels(placesToCheck[40][1]),centerposition[0]-radiansToPixels(placesToCheck[40][0])],20)
             #image2data = Marker(image2data,[radiansToPixels(placesToCheck[366][1]),centerposition[0]-radiansToPixels(placesToCheck[366][0])],20)
-    print()
-    plt.plot(correlations)
-    plt.xlabel("Distance along epipolar line")
-    plt.ylabel("Normalized Cross Correlation") 
-    plt.tight_layout()  
-    plt.show()
+    # print()
+    # plt.plot(correlations)
+    # plt.xlabel("Distance along epipolar line")
+    # plt.ylabel("Normalized Cross Correlation") 
+    # plt.tight_layout()  
+    # plt.show()
     
     #outputData = histogramEqualization(outputData)
     Image.fromarray(image1data).save("1.JPG")
