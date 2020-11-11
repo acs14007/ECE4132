@@ -1,0 +1,22 @@
+A = imread('image.png');
+
+% Convert to gray scale
+A = rgb2gray(A(1:256,1:256,:));
+
+figure,imshow(A),title('Unfiltered Image');
+
+Filtered_Image = A
+for c = 1 : 3
+  Filtered_Image(:, :, c) = medfilt2(I(:, :, c), [3, 3]);
+end
+
+%   Need to convert back to RGB?
+
+A = Filtered_Image
+
+%figure; imshow(Filtered_Image);
+%title('Removed Noise');
+
+%Output/ 0-255 image
+B=zeros(size(A));
+% B=uint8(B);
